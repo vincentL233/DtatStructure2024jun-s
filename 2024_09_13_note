@@ -1,0 +1,3 @@
+Github 
+git config --global user.name ID
+git config --gloabal user.email 123@123.123
