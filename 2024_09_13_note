@@ -11,4 +11,5 @@ var readline = require('readlin-sync')
 npm install
 
 npm uninstall XXX(modename) 卸載
-生成launch.json 底部輸出 console 改為 intergratedTerminal 可在vscode 終端機執行
+快速執行偵錯"program" = "${file}"
+生成launch.json 底部輸出 console 設為 intergratedTerminal 可在vscode 終端機執行
