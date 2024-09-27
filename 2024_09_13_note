@@ -1,3 +1,14 @@
 Github 
 git config --global user.name ID
 git config --gloabal user.email 123@123.123
+
+npm init （初始化）
+npm install readline-sync （持續執行）
+
+利用packagr.json下載插件
+var readline = require('readlin-sync')
+0r
+npm install
+
+npm uninstall XXX(modename) 卸載
+生成launch.json 底部輸出 console 改為 intergratedTerminal 可在vscode 終端機執行
