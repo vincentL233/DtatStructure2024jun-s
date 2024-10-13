@@ -7,8 +7,11 @@ for(var i = 0; i<4; i++){
     ans[i] = ans[random_number];
     ans[random_number]=temp;
 };
+
+//取得答案
 var secret = ans.slice(0,4).join("");
 
+//判斷幾Ａ幾Ｂ
 function getAB(secret,guess){
     var A = 0;
     var B = 0;
@@ -24,7 +27,7 @@ function getAB(secret,guess){
 
 var attempts = 0;
 var G;
-
+//猜
 do{
      G = readline.question("請輸入一個 4 位數的數字: ")
     if(G.length !== 4 || isNaN(G)){
