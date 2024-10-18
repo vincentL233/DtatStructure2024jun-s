@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    canvas {
+            position: absolute;
+            left: 30%;
+            right: 25%;
+            border: 1px solid black;
+        }
+</style>
+<body>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
+    <button onclick="update()">Next</button>
+    <button onclick="randomizeGrid(grid); drawGrid(grid);">Random</button>
+    <button onclick="startGame()">Start</button>
+</body>
+<script src="game_of_life.js"></script>
+</html>
