@@ -1,67 +1,103 @@
 const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
+        const startBtn = document.getElementById("startBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const stepBtn = document.getElementById("stepBtn");
+        const randomBtn = document.getElementById("randomBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const generationCountElement = document.getElementById("generationCount");
 
-        // 設定尺寸
-        const rows = 50;
-        const cols = 50;
+        // 配置
+        const rows = 40;
+        const cols = 40;
         const cellSize = canvas.width / cols;
+        const simulationSpeed = 100; // 毫秒
 
-        // 初始化全空狀態的細胞網格
-        //創建一個指定行數和列數的空網
-        let grid = createGrid(rows, cols);
-        let intervalId;
+        // 遊戲狀態
+        var grid = createGrid(rows, cols);
+        var intervalId = null;
+        var generation = 0;
 
         function createGrid(rows, cols) {
-            let arr = new Array(rows);
-            for (let i = 0; i < rows; i++) {
-                arr[i] = new Array(cols).fill(0);
-            }
-            return arr;
-        }
-        //隨機初始化
-        function randomizeGrid(grid) {
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                    grid[row][col] = Math.random() > 0.7 ? 1 : 0; 
-                }
-            }
+            return Array(rows).fill().map(() => Array(cols).fill(0));
         }
 
-        function drawGrid(grid) {
+        function randomizeGrid() {
+            grid = grid.map(row => row.map(() => Math.random() > 0.7 ? 1 : 0));
+            generation = 0;
+            updateGenerationDisplay();
+            drawGrid();
+        }
+
+        function clearGrid() {
+            grid = createGrid(rows, cols);
+            generation = 0;
+            updateGenerationDisplay();
+            drawGrid();
+        }
+
+        function updateGenerationDisplay() {
+            generationCountElement.textContent = generation;
+        }
+
+        function drawGrid() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 繪製細胞
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
                     ctx.fillStyle = grid[row][col] === 1 ? "#000000" : "#FFFFFF";
-                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                    ctx.strokeRect(col * cellSize, row * cellSize, cellSize, cellSize);
+                    ctx.fillRect(col * cellSize + 1, row * cellSize + 1, cellSize - 2, cellSize - 2);
                 }
             }
+
+            // 繪製網格線
+            ctx.strokeStyle = "#CCCCCC";
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * cellSize);
+                ctx.lineTo(canvas.width, i * cellSize);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= cols; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * cellSize, 0);
+                ctx.lineTo(i * cellSize, canvas.height);
+                ctx.stroke();
+            }
         }
-        //計算下一代的細胞狀態。
-        function getNextGeneration(grid) {
-            let nextGrid = createGrid(rows, cols);
+
+        function getNextGeneration() {
+            const nextGrid = createGrid(rows, cols);
+            
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
-                    const neighbors = countNeighbors(grid, row, col);
-                    if (grid[row][col] === 1) {
-                        // 活細胞生存條件
-                        nextGrid[row][col] = neighbors === 2 || neighbors === 3 ? 1 : 0;
+                    const neighbors = countNeighbors(row, col);
+                    const currentCell = grid[row][col];
+                    
+                    if (currentCell === 1) {
+                        // 存活規則
+                        nextGrid[row][col] = (neighbors === 2 || neighbors === 3) ? 1 : 0;
                     } else {
-                        // 死細胞復活條件
+                        // 誕生規則
                         nextGrid[row][col] = neighbors === 3 ? 1 : 0;
                     }
                 }
             }
+            
             return nextGrid;
         }
-        //計算每個細胞的活鄰居數
-        function countNeighbors(grid, row, col) {
+
+        function countNeighbors(row, col) {
             let count = 0;
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
-                    if (i === 0 && j === 0) continue; 
+                    if (i === 0 && j === 0) continue;
+                    
                     const newRow = row + i;
                     const newCol = col + j;
+                    
                     if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
                         count += grid[newRow][newCol];
                     }
@@ -70,33 +106,51 @@ const canvas = document.getElementById("gameCanvas");
             return count;
         }
 
-        //呼叫更新世代
         function update() {
-            grid = getNextGeneration(grid);
-            drawGrid(grid);
+            grid = getNextGeneration();
+            generation++;
+            updateGenerationDisplay();
+            drawGrid();
         }
-        //每隔 100 毫秒更新一次遊戲狀態
+
         function startGame() {
             if (!intervalId) {
-                intervalId = setInterval(update, 100); 
+                intervalId = setInterval(update, simulationSpeed);
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
             }
         }
 
-        // 停止遊戲
         function stopGame() {
-            clearInterval(intervalId);
-            intervalId = null;
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                stepBtn.disabled = false;
+            }
         }
 
-        // 在 canvas 上點擊以切換細胞狀態
+        // 事件監聽器
         canvas.addEventListener("click", function(event) {
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
             const col = Math.floor(x / cellSize);
             const row = Math.floor(y / cellSize);
-            grid[row][col] = grid[row][col] === 1 ? 0 : 1;
-            drawGrid(grid);
+            
+            if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                grid[row][col] = grid[row][col] === 1 ? 0 : 1;
+                drawGrid();
+            }
         });
 
-        drawGrid(grid);
+        startBtn.addEventListener("click", startGame);
+        stopBtn.addEventListener("click", stopGame);
+        stepBtn.addEventListener("click", update);  // 單步更新
+        randomBtn.addEventListener("click", randomizeGrid);
+        clearBtn.addEventListener("click", clearGrid);
+
+        // 初始設置
+        stopBtn.disabled = true;
+        drawGrid();

@@ -3,22 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>game_of_life</title>
 </head>
 <style>
-    canvas {
-            position: absolute;
-            left: 30%;
-            right: 25%;
-            border: 1px solid black;
+    .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            border-radius: 4px;
+        }
+        #stepBtn {
+            background: #2196F3;  /* 為單步按鈕設置不同的顏色 */
+        }
+        #stepBtn:hover {
+            background: #1976D2;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        #gameCanvas {
+            border: 2px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .generation-counter {
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
         }
 </style>
 <body>
-    <canvas id="gameCanvas" width="500" height="500"></canvas>
-    <button onclick="update()">Next</button>
-    <button onclick="randomizeGrid(grid); drawGrid(grid);">Random</button>
-    <button onclick="startGame()">Start</button>
-    <button onclick="stopGame()">Stop</button>
+    <div class="container">
+        <h1>game_of_life</h1>
+        <canvas id="gameCanvas" width="800" height="800"></canvas>
+        <div class="controls">
+            <button id="startBtn">開始</button>
+            <button id="stopBtn">停止</button>
+            <button id="stepBtn">下一代</button>
+            <button id="randomBtn">隨機</button>
+            <button id="clearBtn">清除</button>
+        </div>
+        <div class="generation-counter">第 <span id="generationCount">0</span> 代</div>
+    </div>
 </body>
 <script src="game_of_life.js"></script>
 </html>
