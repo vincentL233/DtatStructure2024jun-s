@@ -1,7 +1,7 @@
 const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d");
 
-        // 設置網格尺寸
+        // 設定尺寸
         const rows = 50;
         const cols = 50;
         const cellSize = canvas.width / cols;
@@ -9,6 +9,7 @@ const ctx = canvas.getContext("2d");
         // 初始化全空狀態的細胞網格
         //創建一個指定行數和列數的空網
         let grid = createGrid(rows, cols);
+        let intervalId;
 
         function createGrid(rows, cols) {
             let arr = new Array(rows);
@@ -17,7 +18,7 @@ const ctx = canvas.getContext("2d");
             }
             return arr;
         }
-        //隨機初始化網格細胞狀態
+        //隨機初始化
         function randomizeGrid(grid) {
             for (let row = 0; row < rows; row++) {
                 for (let col = 0; col < cols; col++) {
@@ -58,7 +59,7 @@ const ctx = canvas.getContext("2d");
             let count = 0;
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
-                    if (i === 0 && j === 0) continue; // 忽略自己
+                    if (i === 0 && j === 0) continue; 
                     const newRow = row + i;
                     const newCol = col + j;
                     if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
@@ -68,18 +69,7 @@ const ctx = canvas.getContext("2d");
             }
             return count;
         }
-        function getPosition (element) {
-            var x = 0;
-            var y = 0;
-            // 搭配上面的示意圖可比較輕鬆理解為何要這麼計算
-            while ( element ) {
-              x += element.offsetLeft - element.scrollLeft + element.clientLeft;
-              y += element.offsetTop - element.scrollLeft + element.clientTop;
-              element = element.offsetParent;
-            }
-          
-            return { x: x, y: y };
-          }
+
         //呼叫更新世代
         function update() {
             grid = getNextGeneration(grid);
@@ -87,7 +77,26 @@ const ctx = canvas.getContext("2d");
         }
         //每隔 100 毫秒更新一次遊戲狀態
         function startGame() {
-            setInterval(update, 100); 
+            if (!intervalId) {
+                intervalId = setInterval(update, 100); 
+            }
         }
+
+        // 停止遊戲
+        function stopGame() {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        // 在 canvas 上點擊以切換細胞狀態
+        canvas.addEventListener("click", function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+            grid[row][col] = grid[row][col] === 1 ? 0 : 1;
+            drawGrid(grid);
+        });
 
         drawGrid(grid);
