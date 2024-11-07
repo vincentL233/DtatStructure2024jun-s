@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life</title>
+</head>
+<body>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 2px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+    <div class="container">
+        <canvas id="gameCanvas" width="500" height="500" onclick="mouseclick(event)"></canvas>
+        <div class="btn_container">
+            <button onclick="run()">Run</button>
+            <button onclick="tonext()">Next</button>
+            <button onclick="random()">Ramdom</button>
+            <button onclick="stop()">Stop</button>
+        </div>
+        
+    </div>
+    <script src="gamelifr.js"></script>
+</body>
+</html>
