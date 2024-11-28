@@ -11,7 +11,7 @@ var ans =[0,1,2,3,4,5,6,7,8,9];
 //ary2d[1].push("N");
 //在最後面加個Ｎ
 //ary2d.push("N");
-var newary =["NNNN","YYYY"];
+var newary =['NNNN','YYYY'];
 
 ary2d.push(newary);
 console.log(ary2d);
