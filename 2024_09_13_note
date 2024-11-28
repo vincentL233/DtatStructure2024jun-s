@@ -1,6 +1,6 @@
 Github 
-git config --global user.name ID
-git config --gloabal user.email 123@123.123
+git config --global user.name vincentL233
+git config --global user.email vincent02282010@gmail.com
 
 npm init （初始化）
 npm install readline-sync （持續執行）
