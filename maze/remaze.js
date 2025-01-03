@@ -1,192 +1,112 @@
-const maze = [
-    [0, 1, 1, 0, 1, 1, 1, 0, 1, 0],// 0:通路, 1:牆
-    [0, 0, 1, 1, 0, 1, 0, 1, 0, 1],
-    [1, 0, 0, 1, 1, 0, 1, 0, 1, 0],
-    [0, 1, 0, 0, 0, 1, 0, 1, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-    [0, 1, 0, 1, 0, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 1, 0, 1, 0, 1, 0, 1, 1, 1]
+var maze = [
+    [0, 1, 1, 0, 1, 1, 1, 0, 1, 0],
+    [0, 0, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+    [0, 1, 1, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+    [0, 1, 0, 0, 1, 0, 1, 0, 1, 1],
+    [1, 0, 1, 0, 1, 1, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0, 1, 0, 0, 1, 0]
 ];
-
-let isRunning = false;//防誤觸開始或重置
 
 class Point {
     constructor(r, c) {
         this.row = r;
         this.col = c;
     }
-    //比較當前與終點位置是否相同
-    isEnd(other) {
-        return this.row === other.row && this.col === other.col;
+
+    isEnd() {
+        return this.row === end.row && this.col === end.col;
     }
 }
-const start = new Point(0, 0);
-const end = new Point(6, 2);
 
-class MazeSolver {
-    constructor(maze, start, end) {
-        this.maze = maze;
-        this.start = start;
-        this.end = end;
-        this.visited = Array(maze.length).fill().map(() => Array(maze[0].length).fill(false));
-        this.stack = [];
-        this.stepCount = 0;
-        this.directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
-        this.shortestPath = new Map();
-        this.finalPath = [];
-    }
-//檢查點是否在迷宮範圍內
-    isValidPosition(point) {
-        return point.row >= 0 && point.row < this.maze.length && 
-               point.col >= 0 && point.col < this.maze[0].length;
-    }
-//檢查是否可以移動到該點
-    isValidMove(point) {
-        return this.isValidPosition(point) && 
-               this.maze[point.row][point.col] === 0 && 
-               !this.visited[point.row][point.col];
-    }
+var start = new Point(0, 0);
+var end = new Point(7, 9);
+var stack = [];
+var step = start;
+var moveposition = [
+    [-1, 0], [1, 0], [0, -1], [0, 1] // 上、下、左、右
+];
+moveposition.sort((a, b) => Math.random() - 0.5); // 隨機打亂移動方向
 
-    updateCell(point, className) {
-        const cell = document.getElementById(`cell-${point.row}-${point.col}`);
-        if (!cell || (cell.classList.contains('start') && className !== 'visited') || 
-                    (cell.classList.contains('end') && className !== 'visited')) return;
-        cell.className = `cell ${className}`;
-    }
+function isValid(r, c) {
+    return r >= 0 && r < maze.length &&
+           c >= 0 && c < maze[0].length &&
+           maze[r][c] === 0; // 確認位置有效且尚未訪問
+}
 
-    updateUI(point, className) {
-        this.maze[point.row][point.col] = 2;
-        this.updateCell(point, className);
-        document.getElementById('stepCount').textContent = ++this.stepCount;
-    }
+function go() {
+    stack.push(step);
+    while (!step.isEnd()) {
+        maze[step.row][step.col] = 2; // 標記當前位置為已訪問
+        let moved = false;
 
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+        for (let [dr, dc] of moveposition) {
+            let newRow = step.row + dr;
+            let newCol = step.col + dc;
 
-    findNextMove(current) {
-        for (const [dr, dc] of this.directions) {
-            const nextPoint = new Point(current.row + dr, current.col + dc);
-            if (this.isValidMove(nextPoint)) return nextPoint;
-        }
-        return null;
-    }
-
-    async solve() {
-        this.stack = [this.start];
-        this.visited[this.start.row][this.start.col] = true;
-        this.updateUI(this.start, 'backtrack');
-        
-        while (this.stack.length > 0) {
-            const current = this.stack[this.stack.length - 1];
-            
-            if (current.isEnd(this.end)) {
-                this.finalPath = this.reconstructPath();
-                await this.visualizeFinalPath();
-                return true;
+            if (isValid(newRow, newCol)) {
+                step = new Point(newRow, newCol);
+                moved = true;
+                break; // 找到第一個有效方向即移動
             }
+        }
 
-            const nextPoint = this.findNextMove(current);
-            if (nextPoint) {
-                this.shortestPath.set(`${nextPoint.row},${nextPoint.col}`, current);
-                await this.processNextMove(nextPoint);
+        if (moved) {
+            stack.push(step);
+        } else {
+            // 如果無路可走，進行回溯
+            stack.pop(); // 移除當前位置
+            if (stack.length > 0) {
+                step = stack[stack.length - 1]; // 回到上一個位置
             } else {
-                await this.handleBacktrack();
+                console.log("無法找到路徑！");
+                return false;
             }
-            await this.delay(300);
-        }
-        return false;
-    }
-
-    async processNextMove(point) {
-        this.stack.push(point);
-        this.visited[point.row][point.col] = true;
-        this.updateUI(point, 'backtrack');
-    }
-
-    async handleBacktrack() {
-        const current = this.stack.pop();
-        if (!this.finalPath.length) {
-            this.updateUI(current, 'backtrack-deep');
         }
     }
 
-    reconstructPath() {
-        const path = [];
-        let current = this.end;
-        while (!current.isEnd(this.start)) {
-            path.unshift(current);
-            const key = `${current.row},${current.col}`;
-            current = this.shortestPath.get(key);
-        }
-        path.unshift(this.start);
-        return path;
-    }
-
-    async visualizeFinalPath() {
-        for (const point of this.finalPath) {
-            this.updateUI(point, 'visited');
-            await this.delay(100);
-        }
-    }
+    console.log("找到路徑！");
+    return true;
 }
 
-
-
-function createCell(i, j) {
-    const cell = document.createElement('div');
-    cell.className = getCellClassName(i, j);
-    cell.id = `cell-${i}-${j}`;
-    return cell;
+function printMaze() {
+    for (let row of maze) {
+        console.log(row.join(' '));
+    }
 }
-
-function getCellClassName(i, j) {
-    if (i === start.row && j === start.col) return 'cell start';
-    if (i === end.row && j === end.col) return 'cell end';
-    return `cell ${maze[i][j] === 1 ? 'wall' : 'path'}`;
-}
-
-function initializeMaze() {
-    const mazeElement = document.getElementById('maze');
-    mazeElement.innerHTML = '';
-    
-    maze.forEach((row, i) => {
-        const rowElement = document.createElement('div');
-        rowElement.className = 'maze-row';
-        row.forEach((_, j) => rowElement.appendChild(createCell(i, j)));
-        mazeElement.appendChild(rowElement);
+function drawPath(_stack) {
+    var canvas = document.getElementById("map").getContext("2d");
+    var size = Math.min(canvas.canvas.height/maze.length,
+                       canvas.canvas.width/maze[0].length);
+    _stack.forEach(item => {
+        canvas.fillStyle = "#FF0000";
+        canvas.fillRect(item.col * size, item.row * size, size, size);
     });
 }
 
-async function startMaze() {
-    if (isRunning) return;
+function drawBroad() {
+    var ctx = document.getElementById("map").getContext("2d");
+    var size = Math.min(ctx.canvas.height/maze.length,
+                       ctx.canvas.width/maze[0].length);
     
-    const button = document.getElementById('startButton');
-    const resetButton = document.getElementById('resetButton');
-    button.disabled = true;
-    resetButton.disabled = true;
-    isRunning = true;
-    
-    try {
-        const solver = new MazeSolver(maze, start, end);
-        const result = await solver.solve();
-        if (!result) alert('找不到路徑！');
-    } catch (error) {
-        alert(`錯誤：${error.message}`);
-    } finally {
-        button.disabled = false;
-        resetButton.disabled = false;
-        isRunning = false;
+    for(var r = 0; r < maze.length; r++) {
+        for(var c = 0; c < maze[0].length; c++) {
+            if(maze[r][c] == 1) {
+                ctx.fillStyle = "#000000";
+            } else if (maze[r][c] == 0) {
+                ctx.fillStyle = "#FFFFFF";
+            } else if (maze[r][c] == 2) {
+                ctx.fillStyle = "#FFFF00";
+            }
+            ctx.fillRect(c * size, r * size, size, size);
+            ctx.strokeRect(c * size, r * size, size, size);
+        }
     }
 }
-
-function resetMaze() {
-    if (isRunning) return;
-    document.getElementById('stepCount').textContent = '0';
-    document.getElementById('startButton').disabled = false;
-    initializeMaze();
-}
-
-// 初始化迷宮
-window.addEventListener('load', initializeMaze);
+console.log("開始尋路：");
+const result = go();
+console.log("是否找到路徑：", result);
+printMaze(); // 打印最終的迷宮狀態
+drawBroad(); // 先繪製迷宮
+drawPath(stack); // 再繪製路徑

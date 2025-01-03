@@ -29,10 +29,9 @@ function isValid(r, c) {
            c >= 0 && c < maze[0].length;
 }
 function go() {
-    stack.push(step);
-    maze[step.row][step.col] = 2; 
-    
     while (!step.isEnd()) {
+        stack.push(step);
+        maze[step.row][step.col] = 2; 
         let moved = false;
         // 上
         if(isValid(step.row-1, step.col) && maze[step.row-1][step.col] === 0){
